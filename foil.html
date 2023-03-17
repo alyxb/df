@@ -78,7 +78,8 @@ class WebGLMetallicFoilShimmer {
     this.scene.add(this.light);
 
     // Create 3D text
-    const loader = new THREE.FontLoader();
+    const loader = new THREE.FontLoader(THREE.DefaultLoadingManager);
+
     
     //Also, be sure to replace `'path/to/your/font.json'` with the path to your desired font in Three.js JSON format. You can convert your font using the [facetype.js](http://gero3.github.io/facetype.js/) online tool.
     loader.load('https://unpkg.com/three@0.77.0/examples/fonts/helvetiker_regular.typeface.json', (font) => {
