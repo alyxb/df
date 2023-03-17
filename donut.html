@@ -96,8 +96,10 @@ import { FontLoader } from './FontLoader.js';
 }
 
 // Usage
-const container = document.getElementById('your-container-id');
-const webglDonutShimmer = new WebGLDonutShimmer(container);
+document.addEventListener('DOMContentLoaded', function () {
+  const container = document.getElementById('your-container-id');
+  const webglDonutShimmer = new WebGLDonutShimmer(container);
+});
 
     </script>
     
@@ -110,4 +112,12 @@ const webglDonutShimmer = new WebGLDonutShimmer(container);
 		<div id="your-container-id"></div>
     
 	</body>
+	
+	<style>
+		#your-container-id {
+  width: 100%;
+  height: 100vh;
+  position: relative;
+}
+	</style>
 </html>
