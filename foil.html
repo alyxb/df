@@ -1,1 +1,137 @@
-test
+
+
+<!DOCTYPE html>
+
+
+
+<html style="background-color:black;">
+	<head>
+		<title>deep feed revive</title>
+		
+    <script async src="https://unpkg.com/es-module-shims@1.6.3/dist/es-module-shims.js"></script>
+
+    <script type="importmap">
+      {
+        "imports": {
+          "three": "https://unpkg.com/three@0.150.1/build/three.module.js"
+        }
+      }
+    </script>
+    
+    <script type="module">
+
+// webglMetallicFoilShimmer.js
+
+import * as THREE from 'three';
+
+class WebGLMetallicFoilShimmer {
+  constructor(container, text) {
+    this.container = container;
+    this.text = text;
+    this.initSensors();
+    this.initScene();
+  }
+
+  initSensors() {
+    if ('Accelerometer' in window && 'AmbientLightSensor' in window) {
+      this.accelerometer = new Accelerometer({ frequency: 60 });
+      this.ambientLightSensor = new AmbientLightSensor();
+      this.addSensorListeners();
+    } else {
+      console.error('Sensor APIs are not supported in this browser.');
+    }
+  }
+
+  addSensorListeners() {
+    this.accelerometer.addEventListener('reading', this.handleAccelerometerReading.bind(this));
+    this.accelerometer.start();
+
+    this.ambientLightSensor.addEventListener('reading', this.handleAmbientLightSensorReading.bind(this));
+    this.ambientLightSensor.start();
+  }
+
+  handleAccelerometerReading() {
+    // Calculate angle based on accelerometer readings
+    const angleX = Math.atan2(this.accelerometer.x, Math.sqrt(Math.pow(this.accelerometer.y, 2) + Math.pow(this.accelerometer.z, 2))) * (180 / Math.PI);
+    const angleY = Math.atan2(this.accelerometer.y, Math.sqrt(Math.pow(this.accelerometer.x, 2) + Math.pow(this.accelerometer.z, 2))) * (180 / Math.PI);
+
+    // Rotate the light source
+    this.light.position.set(angleX, angleY, 1);
+  }
+
+  handleAmbientLightSensorReading() {
+    // Update light intensity
+    this.light.intensity = this.ambientLightSensor.illuminance / 1000;
+  }
+
+  initScene() {
+    // Create a Three.js scene, camera, and renderer
+    this.scene = new THREE.Scene();
+    this.camera = new THREE.PerspectiveCamera(45, this.container.offsetWidth / this.container.offsetHeight, 0.1, 1000);
+    this.renderer = new THREE.WebGLRenderer();
+    this.renderer.setSize(this.container.offsetWidth, this.container.offsetHeight);
+    this.container.appendChild(this.renderer.domElement);
+
+    // Create a light source
+    this.light = new THREE.PointLight(0xffffff, 1, 100);
+    this.light.position.set(0, 0, 1);
+    this.scene.add(this.light);
+
+    // Create 3D text
+    const loader = new THREE.FontLoader();
+    
+    //Also, be sure to replace `'path/to/your/font.json'` with the path to your desired font in Three.js JSON format. You can convert your font using the [facetype.js](http://gero3.github.io/facetype.js/) online tool.
+    loader.load('https://unpkg.com/three@0.77.0/examples/fonts/helvetiker_regular.typeface.json', (font) => {
+      const geometry = new THREE.TextGeometry(this.text, {
+        font: font,
+        size: 1,
+        height: 0.1,
+        curveSegments: 12,
+        bevelEnabled: true,
+        bevelThickness: 0.01,
+        bevelSize: 0.01,
+        bevelOffset: 0,
+        bevelSegments: 5
+      });
+
+      const material = new THREE.MeshStandardMaterial({
+        color: 0x9ca6af,
+        metalness: 0.9,
+        roughness: 0.3,
+      });
+      
+      this.textMesh = new THREE.Mesh(geometry, material);
+      this.textMesh.position.set(-this.text.length * 0.5, -0.5, -5);
+      this.scene.add(this.textMesh);
+
+      this.animate();
+    });
+    
+    }
+  
+    animate() {
+      requestAnimationFrame(this.animate.bind(this));
+      
+      // Update the renderer
+      this.renderer.render(this.scene, this.camera);
+      
+      }
+    }
+      
+      
+    // Usage
+    const container = document.getElementById('your-container-id');
+    const text = 'Hello World';
+    const webglMetallicFoilShimmer = new WebGLMetallicFoilShimmer(container, text);
+
+    </script>
+    
+    
+    
+    
+	</head>
+	<body style="display: flex;">
+
+    
+	</body>
+</html>
