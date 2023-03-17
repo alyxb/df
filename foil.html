@@ -120,9 +120,11 @@ class WebGLMetallicFoilShimmer {
       
       
     // Usage
-    const container = document.getElementById('your-container-id');
-    const text = 'Hello World';
-    const webglMetallicFoilShimmer = new WebGLMetallicFoilShimmer(container, text);
+    document.addEventListener("DOMContentLoaded", function() {
+	    const container = document.getElementById('your-container-id');
+	    const text = 'Hello World';
+	    const webglMetallicFoilShimmer = new WebGLMetallicFoilShimmer(container, text);
+    });
 
     </script>
     
@@ -131,7 +133,8 @@ class WebGLMetallicFoilShimmer {
     
 	</head>
 	<body style="display: flex;">
-
+		
+		<div id="your-container-id"></div>
     
 	</body>
 </html>
