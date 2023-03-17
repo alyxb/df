@@ -86,7 +86,7 @@ class WebGLMetallicFoilShimmer {
     
     //Also, be sure to replace `'path/to/your/font.json'` with the path to your desired font in Three.js JSON format. You can convert your font using the [facetype.js](http://gero3.github.io/facetype.js/) online tool.
     loader.load('https://unpkg.com/three@0.77.0/examples/fonts/helvetiker_regular.typeface.json', (font) => {
-      const geometry = new THREE.TextGeometry(this.text, {
+      const geometry = new THREE.TextBufferGeometry(this.text, {
         font: font,
         size: 1,
         height: 0.1,
