@@ -79,8 +79,11 @@ class WebGLDonutShimmer {
     });
 
     const donutGeometry = new THREE.TorusGeometry(1, 0.4, 16, 100);
-    const donutMesh = new THREE.Mesh(donutGeometry, this.donutMaterial);
-    this.scene.add(donutMesh);
+//     const donutMesh = new THREE.Mesh(donutGeometry, this.donutMaterial);
+//     this.scene.add(donutMesh);
+	  
+  this.donut = new THREE.Mesh(donutGeometry, this.donutMaterial);
+this.scene.add(this.donut);
 	  
 	  
 	  
