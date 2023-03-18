@@ -43,6 +43,11 @@ class WebGLDonutShimmer {
   }
 
   initScene() {
+	  
+	  
+
+	  
+	  
     const container = document.getElementById('container');
     this.width = container.offsetWidth;
     this.height = container.offsetHeight;
@@ -84,16 +89,39 @@ class WebGLDonutShimmer {
     });
 
     // Dynamic environment map
-    const cubeTextureLoader = new THREE.CubeTextureLoader();
-    cubeTextureLoader.setPath('https://rendergon.com/three2.js/examples/textures/cube/pisa/');
-    const envMap = cubeTextureLoader.load([
-      'px.jpg', 'nx.jpg',
-      'py.jpg', 'ny.jpg',
-      'pz.jpg', 'nz.jpg'
-    ]);
-    this.donutMaterial.envMap = envMap;
+//     const cubeTextureLoader = new THREE.CubeTextureLoader();
+//     cubeTextureLoader.setPath('https://rendergon.com/three2.js/examples/textures/cube/pisa/');
+//     const envMap = cubeTextureLoader.load([
+//       'px.jpg', 'nx.jpg',
+//       'py.jpg', 'ny.jpg',
+//       'pz.jpg', 'nz.jpg'
+//     ]);
+//     this.donutMaterial.envMap = envMap;
+//     this.donutMaterial.combine = THREE.MixOperation;
+//     this.donutMaterial.reflectivity = 0.5;
+	  
+  
+// Dynamic environment map using the front-facing camera
+navigator.mediaDevices.getUserMedia({ video: { facingMode: 'user' }, audio: false })
+  .then((stream) => {
+    const video = document.createElement('video');
+    video.srcObject = stream;
+    video.play();
+
+    const cameraTexture = new THREE.VideoTexture(video);
+    cameraTexture.minFilter = THREE.LinearFilter;
+    cameraTexture.magFilter = THREE.LinearFilter;
+    cameraTexture.format = THREE.RGBFormat;
+
+    this.donutMaterial.envMap = cameraTexture;
     this.donutMaterial.combine = THREE.MixOperation;
     this.donutMaterial.reflectivity = 0.5;
+  })
+  .catch((error) => {
+    console.error('Unable to access the front-facing camera:', error);
+  });
+	  
+	  
 
     // Shadow effects
     this.sunLight.castShadow = true;
