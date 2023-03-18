@@ -63,22 +63,13 @@ import { FontLoader } from './FontLoader.js';
   }
 
 initSensors() {
-	
-	if ('AmbientLightSensor' in window) {
-  alert('AmbientLightSensor is supported');
-} else {
-  alert('AmbientLightSensor is not supported');
-}
-	
-	
   // Accelerometer
   if ('Accelerometer' in window) {
     this.requestSensorPermission('accelerometer')
       .then(() => {
         const accelerometer = new Accelerometer({ frequency: 60 });
         accelerometer.addEventListener('reading', () => {
-//           this.donutMesh.rotation.x = accelerometer.x * 0.1;
-//           this.donutMesh.rotation.y = accelerometer.y * 0.1;
+          // Donut will stay still
         });
         accelerometer.start();
       })
@@ -87,8 +78,9 @@ initSensors() {
       });
   }
 
-  // Ambient light sensor
-  if ('AmbientLightSensor' in window) {
+  const isIOS = /iPad|iPhone|iPod/.test(navigator.userAgent) && !window.MSStream;
+
+  if (!isIOS && 'AmbientLightSensor' in window) {
     this.requestSensorPermission('ambient-light-sensor')
       .then(() => {
         const ambientLightSensor = new AmbientLightSensor();
@@ -104,17 +96,13 @@ initSensors() {
       })
       .catch((error) => {
         console.error('AmbientLightSensor permission denied:', error);
+        // Fallback to DeviceOrientationEvent
+        this.initDeviceOrientationLight();
       });
-  }
-	
-	
-  // DeviceOrientationEvent as an alternative to AmbientLightSensor
-  if ('DeviceOrientationEvent' in window) {
-    this.initDeviceOrientationLight();
   } else {
-    console.log('DeviceOrientationEvent is not supported');
+    // Use DeviceOrientationEvent for iOS devices and devices that don't support AmbientLightSensor
+    this.initDeviceOrientationLight();
   }
-	
 }
 		    
 
