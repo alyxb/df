@@ -40,7 +40,7 @@ class WebGLDonutShimmer {
   }
 
   initScene() {
-    const container = document.getElementById('your-container-id');
+    const container = document.getElementById('container');
     this.width = container.offsetWidth;
     this.height = container.offsetHeight;
 
@@ -70,30 +70,28 @@ class WebGLDonutShimmer {
   }
 
   initSensors() {
-    if (window.DeviceOrientationEvent) {
-      window.addEventListener('deviceorientation', (event) => {
-        const alpha = event.alpha;
-        const beta = event.beta;
-        const gamma = event.gamma;
-
-        const lightPositions = this.calculateLightPositions(alpha, beta, gamma);
-
-        this.sunLight.position.set(lightPositions.sunPosition.x, lightPositions.sunPosition.y, lightPositions.sunPosition.z);
-        this.moonLight.position.set(lightPositions.moonPosition.x, lightPositions.moonPosition.y, lightPositions.moonPosition.z);
-      });
-    }
+    const lightPositions = this.calculateLightPositions();
+    this.sunLight.position.set(lightPositions.sunPosition.x, lightPositions.sunPosition.y, lightPositions.sunPosition.z);
+    this.moonLight.position.set(lightPositions.moonPosition.x, lightPositions.moonPosition.y, lightPositions.moonPosition.z);
   }
 
-  calculateLightPositions(alpha, beta, gamma) {
-    // Calculate the sun and moon positions based on the current time and device orientation
-    // You can customize this part to create more realistic light positions
-    const sunPosX = Math.sin(alpha) * 5;
-    const sunPosY = Math.sin(beta) * 5;
-    const sunPosZ = Math.sin(gamma) * 5;
+  calculateLightPositions() {
+    const now = new Date();
+    const hours = now.getHours() + now.getMinutes() / 60;
+    const dayProgress = hours / 24;
 
-    const moonPosX = Math.cos(alpha) * 5;
-    const moonPosY = Math.cos(beta) * 5;
-    const moonPosZ = Math.cos(gamma) * 5;
+    const sunAngle = 2 * Math.PI * dayProgress - Math.PI / 2;
+    const moonAngle = sunAngle + Math.PI;
+
+    const radius = 5;
+
+    const sunPosX = radius * Math.cos(sunAngle);
+    const sunPosY = radius * Math.sin(sunAngle);
+    const sunPosZ = 0;
+
+    const moonPosX = radius * Math.cos(moonAngle);
+    const moonPosY = radius * Math.sin(moonAngle);
+    const moonPosZ = 0;
 
     return {
       sunPosition: new THREE.Vector3(sunPosX, sunPosY, sunPosZ),
@@ -109,8 +107,7 @@ class WebGLDonutShimmer {
 
 document.addEventListener('DOMContentLoaded', () => {
   new WebGLDonutShimmer();
-});	    
-	    
+});
 
 	    
 	    
@@ -340,7 +337,7 @@ document.addEventListener('DOMContentLoaded', () => {
 	</head>
 	<body style="display: flex;">
 		
-		<div id="your-container-id"></div>
+		<div id="container"></div>
     
 	</body>
 	
