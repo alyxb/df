@@ -21,6 +21,15 @@
       }
       //https://unpkg.com/three@0.150.1/build/three.module.js
     </script>
+		
+		
+<script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+<script src="https://threejs.org/examples/jsm/loaders/CubeTextureLoader.js"></script>
+<script src="https://threejs.org/examples/jsm/postprocessing/EffectComposer.js"></script>
+<script src="https://threejs.org/examples/jsm/postprocessing/RenderPass.js"></script>
+<script src="https://threejs.org/examples/jsm/postprocessing/ShaderPass.js"></script>
+<script src="https://threejs.org/examples/jsm/postprocessing/UnrealBloomPass.js"></script>
+<script src="https://threejs.org/examples/jsm/shaders/CopyShader.js"></script>
     
     <script type="module">
 
@@ -67,6 +76,52 @@ class WebGLDonutShimmer {
     const donutGeometry = new THREE.TorusGeometry(1, 0.4, 16, 100);
     const donutMesh = new THREE.Mesh(donutGeometry, this.donutMaterial);
     this.scene.add(donutMesh);
+	  
+	  
+	  
+	  
+	  
+    // Improved bump mapping
+    this.loader.load('https://static.wixstatic.com/media/d58553_38a40aa199d3488e8679dd1939088047~mv2.jpg/v1/fill/w_140,h_140,al_c,lg_1,q_80,enc_auto/d58553_38a40aa199d3488e8679dd1939088047~mv2.jpg', (bumpTexture) => {
+      bumpTexture.wrapS = bumpTexture.wrapT = THREE.RepeatWrapping;
+      bumpTexture.repeat.set(4, 4);
+      this.donutMaterial.bumpMap = bumpTexture;
+      this.donutMaterial.bumpScale = 0.05;
+    });
+
+    // Dynamic environment map
+    const cubeTextureLoader = new THREE.CubeTextureLoader();
+    cubeTextureLoader.setPath('https://rendergon.com/three2.js/examples/textures/cube/pisa/');
+    const envMap = cubeTextureLoader.load([
+      'px.jpg', 'nx.jpg',
+      'py.jpg', 'ny.jpg',
+      'pz.jpg', 'nz.jpg'
+    ]);
+    this.donutMaterial.envMap = envMap;
+    this.donutMaterial.combine = THREE.MixOperation;
+    this.donutMaterial.reflectivity = 0.5;
+
+    // Shadow effects
+    this.sunLight.castShadow = true;
+    this.moonLight.castShadow = true;
+    this.donut.castShadow = true;
+    this.donut.receiveShadow = true;
+	  
+	  
+	  
+      // Post-processing effects
+    this.composer = new THREE.EffectComposer(this.renderer);
+    this.composer.addPass(new THREE.RenderPass(this.scene, this.camera));
+
+    const bloomPass = new THREE.UnrealBloomPass(new THREE.Vector2(window.innerWidth, window.innerHeight), 1.5, 0.4, 0.85);
+    bloomPass.threshold = 0.2;
+    bloomPass.strength = 1.5;
+    bloomPass.radius = 0.4;
+    this.composer.addPass(bloomPass);
+
+    const effectCopy = new THREE.ShaderPass(THREE.CopyShader);
+    effectCopy.renderToScreen = true;
+    this.composer.addPass(effectCopy);
   }
 
 //   initSensors() {
@@ -99,11 +154,21 @@ class WebGLDonutShimmer {
   }
 
   addDeviceOrientationListener() {
+    const sensitivity = 0.01;
+    let prevAlpha = 0, prevBeta = 0, prevGamma = 0;
+
     window.addEventListener('deviceorientation', (event) => {
       const { alpha, beta, gamma } = event;
-      const lightPositions = this.calculateLightPositions(alpha, beta, gamma);
-      this.sunLight.position.set(lightPositions.sunPosition.x, lightPositions.sunPosition.y, lightPositions.sunPosition.z);
-      this.moonLight.position.set(lightPositions.moonPosition.x, lightPositions.moonPosition.y, lightPositions.moonPosition.z);
+
+      if (Math.abs(alpha - prevAlpha) > sensitivity || Math.abs(beta - prevBeta) > sensitivity || Math.abs(gamma - prevGamma) > sensitivity) {
+        const lightPositions = this.calculateLightPositions(alpha, beta, gamma);
+        this.sunLight.position.set(lightPositions.sunPosition.x, lightPositions.sunPosition.y, lightPositions.sunPosition.z);
+        this.moonLight.position.set(lightPositions.moonPosition.x, lightPositions.moonPosition.y, lightPositions.moonPosition.z);
+
+        prevAlpha = alpha;
+        prevBeta = beta;
+        prevGamma = gamma;
+      }
     });
   }
 	
@@ -141,8 +206,14 @@ class WebGLDonutShimmer {
   }
 
   animate() {
-	requestAnimationFrame(() => this.animate());
-	this.renderer.render(this.scene, this.camera);
+    requestAnimationFrame(() => this.animate());
+
+    // Animate the texture
+    const delta = this.clock.getDelta();
+    this.donutMaterial.bumpMap.offset.x += delta * 0.05;
+
+    this.renderer.clear();
+    this.composer.render(delta);
   }
 }
 	    
