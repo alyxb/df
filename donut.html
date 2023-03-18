@@ -5,6 +5,9 @@
 
 
 <html style="background-color:black;">
+	<meta name="viewport" content="width=device-width, initial-scale=1, minimum-scale=1, maximum-scale=1, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
 	<head>
 		<title>deep feed revive</title>
 		
@@ -40,7 +43,8 @@ import { FontLoader } from './FontLoader.js';
 initScene() {
   this.scene = new THREE.Scene();
   this.camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
-  this.renderer = new THREE.WebGLRenderer();
+  this.renderer = new THREE.WebGLRenderer({canvas: document.querySelector('#your-canvas'), context: ( 'WebGL2RenderingContext' in window ? 'webgl2' : 'webgl' ) });
+
   this.renderer.setSize(window.innerWidth, window.innerHeight);
   document.body.appendChild(this.renderer.domElement);
 
