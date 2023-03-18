@@ -40,7 +40,7 @@ class WebGLDonutShimmer {
   }
 
   initScene() {
-    const container = document.getElementById('your-container-id');
+    const container = document.getElementById('container');
     this.width = container.offsetWidth;
     this.height = container.offsetHeight;
 
@@ -69,13 +69,45 @@ class WebGLDonutShimmer {
     this.scene.add(donutMesh);
   }
 
+//   initSensors() {
+//     if (window.DeviceOrientationEvent) {
+//       window.addEventListener('deviceorientation', (event) => {
+//         const { alpha, beta, gamma } = event;
+//         const lightPositions = this.calculateLightPositions(alpha, beta, gamma);
+//         this.sunLight.position.set(lightPositions.sunPosition.x, lightPositions.sunPosition.y, lightPositions.sunPosition.z);
+//         this.moonLight.position.set(lightPositions.moonPosition.x, lightPositions.moonPosition.y, lightPositions.moonPosition.z);
+//       });
+//     }
+//   }
+	
   initSensors() {
-    const lightPositions = this.calculateLightPositions();
-    this.sunLight.position.set(lightPositions.sunPosition.x, lightPositions.sunPosition.y, lightPositions.sunPosition.z);
-    this.moonLight.position.set(lightPositions.moonPosition.x, lightPositions.moonPosition.y, lightPositions.moonPosition.z);
+    if (window.DeviceOrientationEvent) {
+      const requestPermission = () => {
+        if (typeof DeviceOrientationEvent.requestPermission === 'function') {
+          DeviceOrientationEvent.requestPermission()
+            .then(permission => {
+              if (permission === 'granted') {
+                this.addDeviceOrientationListener();
+              }
+            });
+        } else {
+          this.addDeviceOrientationListener();
+        }
+      };
+      document.getElementById('requestPermissionButton').addEventListener('click', requestPermission);
+    }
   }
 
-  calculateLightPositions() {
+  addDeviceOrientationListener() {
+    window.addEventListener('deviceorientation', (event) => {
+      const { alpha, beta, gamma } = event;
+      const lightPositions = this.calculateLightPositions(alpha, beta, gamma);
+      this.sunLight.position.set(lightPositions.sunPosition.x, lightPositions.sunPosition.y, lightPositions.sunPosition.z);
+      this.moonLight.position.set(lightPositions.moonPosition.x, lightPositions.moonPosition.y, lightPositions.moonPosition.z);
+    });
+  }
+	
+  calculateLightPositions(alpha, beta, gamma) {
     const now = new Date();
     const hours = now.getHours() + now.getMinutes() / 60;
     const dayProgress = hours / 24;
@@ -85,13 +117,22 @@ class WebGLDonutShimmer {
 
     const radius = 5;
 
-    const sunPosX = radius * Math.cos(sunAngle);
-    const sunPosY = radius * Math.sin(sunAngle);
-    const sunPosZ = 0;
+    const baseSunPosX = radius * Math.cos(sunAngle);
+    const baseSunPosY = radius * Math.sin(sunAngle);
+    const baseMoonPosX = radius * Math.cos(moonAngle);
+    const baseMoonPosY = radius * Math.sin(moonAngle);
 
-    const moonPosX = radius * Math.cos(moonAngle);
-    const moonPosY = radius * Math.sin(moonAngle);
-    const moonPosZ = 0;
+    const alphaRad = THREE.MathUtils.degToRad(alpha);
+    const betaRad = THREE.MathUtils.degToRad(beta);
+    const gammaRad = THREE.MathUtils.degToRad(gamma);
+
+    const sunPosX = baseSunPosX * Math.cos(betaRad) * Math.cos(gammaRad) + baseSunPosY * (Math.cos(alphaRad) * Math.sin(gammaRad) - Math.sin(alphaRad) * Math.sin(betaRad) * Math.cos(gammaRad));
+    const sunPosY = baseSunPosX * Math.cos(betaRad) * Math.sin(gammaRad) + baseSunPosY * (-Math.cos(alphaRad) * Math.cos(gammaRad) - Math.sin(alphaRad) * Math.sin(betaRad) * Math.sin(gammaRad));
+    const sunPosZ = baseSunPosX * Math.sin(betaRad) + baseSunPosY * Math.sin(alphaRad) * Math.cos(betaRad);
+	  
+    const moonPosX = baseMoonPosX * Math.cos(betaRad) * Math.cos(gammaRad) + baseMoonPosY * (Math.cos(alphaRad) * Math.sin(gammaRad) - Math.sin(alphaRad) * Math.sin(betaRad) * Math.cos(gammaRad));
+    const moonPosY = baseMoonPosX * Math.cos(betaRad) * Math.sin(gammaRad) + baseMoonPosY * (-Math.cos(alphaRad) * Math.cos(gammaRad) - Math.sin(alphaRad) * Math.sin(betaRad) * Math.sin(gammaRad));
+    const moonPosZ = baseMoonPosX * Math.sin(betaRad) + baseMoonPosY * Math.sin(alphaRad) * Math.cos(betaRad);
 
     return {
       sunPosition: new THREE.Vector3(sunPosX, sunPosY, sunPosZ),
@@ -100,15 +141,14 @@ class WebGLDonutShimmer {
   }
 
   animate() {
-    requestAnimationFrame(() => this.animate());
-    this.renderer.render(this.scene, this.camera);
+	requestAnimationFrame(() => this.animate());
+	this.renderer.render(this.scene, this.camera);
   }
 }
-
+	    
 document.addEventListener('DOMContentLoaded', () => {
-  new WebGLDonutShimmer();
+	new WebGLDonutShimmer();
 });
-
 	    
 	    
 // 	    class WebGLDonutShimmer {
@@ -336,13 +376,14 @@ document.addEventListener('DOMContentLoaded', () => {
     
 	</head>
 	<body style="display: flex;">
-		
+		<button id="requestPermissionButton">Request Permission</button>
+
 		<div id="container"></div>
-    
+    		
 	</body>
 	
 	<style>
-		#your-container-id {
+		#container {
   width: 100%;
   height: 100vh;
   position: relative;
